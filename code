@@ -1,0 +1,92 @@
+1)  Create a column called Age_Category that returns Young for ages less than 30,
+-- Aged for ages greater than 60, and Middle Aged otherwise
+
+SELECT * , 
+CASE WHEN age < 30 THEN 'Young'
+     WHEN age > 60 THEN 'Aged'
+	 ELSE 'Middle'
+END AS Age_Category
+FROM customers;
+------------------------------------------------------------------------------------------------------------------------------------------------
+2) Retrieve a list of the average salary of employees.
+-- If the average salary is more than
+-- 80000, return Paid Well. If the average salary is less than 80000, 
+--return Underpaid,
+-- otherwise, return Unpaid
+
+SELECT emp_no , AVG(salary) , 
+CASE WHEN AVG(salary) > 80000 THEN 'Paid Well'
+     WHEN AVG(salary) < 80000 THEN 'Underpaid'
+	 ELSE 'Unpaid'
+	 END AS status 
+FROM salaries
+GROUP BY emp_no 
+------------------------------------------------------------------------------------------------------------------------------------------------
+3) Retrieve a list of the average salary of employees. 
+-- If the average salary is more than
+-- 80000 but less than 100000, return Paid Well. 
+-- If the average salary is less than 80000, 
+-- return Underpaid, otherwise, return Manager
+
+SELECT emp_no , AVG(salary) , 
+CASE WHEN AVG(salary) > 80000 and AVG(salary) < 100000 THEN 'paid well'
+     WHEN AVG(salary) < 80000 THEN 'Underpaid'
+	 ELSE 'Manager'
+	 END AS salary 
+FROM salaries
+GROUP BY emp_no
+
+
+Part 2) Count the number of employees in each salary category
+1) first write a subquery to make the previous query the source of data 
+SELECT * FROM 
+( SELECT emp_no , AVG(salary) , 
+CASE WHEN AVG(salary) > 80000 and AVG(salary) < 100000 THEN 'paid well'
+     WHEN AVG(salary) < 80000 THEN 'Underpaid'
+	 ELSE 'Manager'
+	 END AS salary 
+FROM salaries
+GROUP BY emp_no
+) AS source_of_data  #must has an alis 
+
+
+
+SELECT source_of_data.salary , count(*)
+FROM 
+( SELECT emp_no , AVG(salary) , 
+CASE WHEN AVG(salary) > 80000 and AVG(salary) < 100000 THEN 'paid well'
+     WHEN AVG(salary) < 80000 THEN 'Underpaid'
+	 ELSE 'Manager'
+	 END AS salary 
+FROM salaries
+GROUP BY emp_no
+) AS source_of_data
+group by source_of_data.salary
+
+---------------------------------------------------------------------------------------------------------
+4) Obtain a result set containing the employee number, first name, and last name
+-- of all employees. Create a 4th column in the query, indicating whether this 
+-- employee is also a manager, according to the data in the
+-- dept_manager table, or a regular employee
+
+
+SELECT e.emp_no , e.first_name , e.last_name ,
+CASE WHEN e.emp_no IN (SELECT dm.emp_no FROM  dept_manager dm ) THEN 'dept_manager'
+     ELSE 'employee'
+	 END AS indicating
+FROM employees e
+LEFT JOIN dept_manager dm 
+ON dm.emp_no = e.emp_no
+
+
+or 
+
+SELECT e.emp_no , e.first_name , e.last_name ,
+CASE WHEN dm.emp_no IS NOT NULL THEN 'dept_manager'
+     ELSE 'employee'
+	 END AS indicating
+FROM employees e
+LEFT JOIN dept_manager dm 
+ON dm.emp_no = e.emp_no
+
+
